@@ -162,6 +162,10 @@ function generateSeedInterns(count: number): Intern[] {
       segregation,
       sheetStatus,
       dataRepurposed,
+      // new fields
+      leaveFrom: null,
+      leaveTo: null,
+      warningLevel: null,
     });
   }
   return out;
