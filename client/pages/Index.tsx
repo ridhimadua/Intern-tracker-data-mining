@@ -178,6 +178,7 @@ export default function Index() {
   const [search, setSearch] = useState("");
   const [filterSheet, setFilterSheet] = useState<string>("All");
   const [filterPerf, setFilterPerf] = useState<string>("All");
+  const [filterSeg, setFilterSeg] = useState<string>("All");
 
   // Pagination
   const [page, setPage] = useState(1);
