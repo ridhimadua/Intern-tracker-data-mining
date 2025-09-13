@@ -479,8 +479,8 @@ export default function Index() {
             <TableRow>
               <TableHead className="w-72">Intern Name</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Excel Submitted</TableHead>
-              <TableHead>AI Chat Team</TableHead>
+              <TableHead>Excel Sheet</TableHead>
+              <TableHead>AI Chatbot Channel</TableHead>
               <TableHead>Data Mining GC</TableHead>
               <TableHead>Speakers Count</TableHead>
               <TableHead>Speakers Progress</TableHead>
