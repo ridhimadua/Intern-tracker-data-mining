@@ -467,7 +467,9 @@ export default function Index() {
               <TableHead>Speakers Count</TableHead>
               <TableHead>Speakers Progress</TableHead>
               <TableHead>Performance</TableHead>
+              {filterPerf === "Weak" ? <TableHead>Warning Level</TableHead> : null}
               <TableHead>Segregation</TableHead>
+              <TableHead>Leave Dates</TableHead>
               <TableHead>Sheet Status</TableHead>
               <TableHead>Data Repurposed</TableHead>
             </TableRow>
