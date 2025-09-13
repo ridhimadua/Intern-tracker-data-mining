@@ -49,6 +49,10 @@ type Intern = {
   segregation: Segregation | null;
   sheetStatus: SheetStatus;
   dataRepurposed: YesNo;
+  // new fields
+  leaveFrom?: string | null;
+  leaveTo?: string | null;
+  warningLevel?: number | null;
 };
 
 const departments = ["Engineering", "Design", "Marketing", "Product", "HR"];
