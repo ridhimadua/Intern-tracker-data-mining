@@ -485,7 +485,7 @@ export default function Index() {
               <TableHead>Speakers Count</TableHead>
               <TableHead>Speakers Progress</TableHead>
               <TableHead>Performance</TableHead>
-              {filterPerf === "Weak" ? <TableHead>Warning Level</TableHead> : null}
+              <TableHead>Warning Level</TableHead>
               <TableHead>Segregation</TableHead>
               <TableHead>Leave Dates</TableHead>
               <TableHead>Sheet Status</TableHead>
@@ -646,8 +646,8 @@ export default function Index() {
                   </Select>
                 </TableCell>
 
-                {filterPerf === "Weak" ? (
-                  <TableCell>
+                <TableCell>
+                  {i.performance === "Weak" ? (
                     <Select value={String(i.warningLevel ?? "None")} onValueChange={(v) => setWarningLevel(i.id, v === "None" ? null : Number(v))}>
                       <SelectTrigger>
                         <SelectValue />
@@ -659,8 +659,10 @@ export default function Index() {
                         <SelectItem value="3">3</SelectItem>
                       </SelectContent>
                     </Select>
-                  </TableCell>
-                ) : null}
+                  ) : (
+                    <div className="text-sm text-muted-foreground">—</div>
+                  )}
+                </TableCell>
 
                 <TableCell>
                   <Select
