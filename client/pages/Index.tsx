@@ -548,6 +548,10 @@ export default function Index() {
                         <span className="text-rose-600 font-semibold">I</span>{" "}
                         Inactive
                       </SelectItem>
+                      <SelectItem value="Leave">
+                        <span className="text-sky-600 font-semibold">L</span>{" "}
+                        Leave
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </TableCell>
