@@ -333,6 +333,12 @@ export default function Index() {
   function setEmail(id: string, email: string) {
     setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, email } : p)));
   }
+  function setWarningLevel(id: string, level: number | null) {
+    setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, warningLevel: level } : p)));
+  }
+  function setLeaveDates(id: string, from: string | null, to: string | null) {
+    setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, leaveFrom: from, leaveTo: to } : p)));
+  }
 
   return (
     <div className="space-y-6">
