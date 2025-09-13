@@ -53,6 +53,7 @@ type Intern = {
 const departments = ["Engineering", "Design", "Marketing", "Product", "HR"];
 
 function initials(name: string) {
+  if (!name) return "";
   return name
     .split(" ")
     .map((n) => n[0])
@@ -64,7 +65,7 @@ function initials(name: string) {
 
 function stringToHue(str: string) {
   let hash = 0;
-  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < (str || "").length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
   return Math.abs(hash) % 360;
 }
 
@@ -108,77 +109,28 @@ function exportToCsv(rows: Intern[]) {
 }
 
 function generateSeedInterns(count: number): Intern[] {
-  const first = [
-    "Ava",
-    "Liam",
-    "Maya",
-    "Ethan",
-    "Noah",
-    "Olivia",
-    "Sophia",
-    "Lucas",
-    "Zoe",
-    "Isabella",
-    "Mason",
-    "Mia",
-    "Amelia",
-    "Harper",
-    "Camila",
-    "Aria",
-    "Elijah",
-    "Logan",
-    "Charlotte",
-    "Henry",
-  ];
-  const last = [
-    "Patel",
-    "Johnson",
-    "Chen",
-    "Garcia",
-    "Nguyen",
-    "Smith",
-    "Brown",
-    "Davis",
-    "Martinez",
-    "Lopez",
-    "Wilson",
-    "Anderson",
-    "Thomas",
-    "Taylor",
-    "Moore",
-    "Jackson",
-  ];
-
   const out: Intern[] = [];
   for (let i = 0; i < count; i++) {
-    const f = first[Math.floor(Math.random() * first.length)];
-    const l = last[Math.floor(Math.random() * last.length)];
-    const name = `${f} ${l}`;
-    const email = `${f.toLowerCase()}.${l.toLowerCase()}${i}@example.com`;
-    const r = Math.random();
-    const statusActivity: StatusActivity = r > 0.15 ? "Active" : "Inactive";
+    const statusRand = Math.random();
+    const statusActivity: StatusActivity = statusRand > 0.15 ? "Active" : "Inactive";
     const excelSubmitted: YesNo = Math.random() > 0.35 ? "Yes" : "No";
     const aiChatAdded = Math.random() > 0.5;
     const dataMiningGC = Math.random() > 0.5;
     const speakersCount = Math.floor(Math.random() * 120); // 0-119
     const speakersTarget = 100;
-    // Simple performance heuristic
     const performance: Performance = speakersCount > 60 && aiChatAdded && dataMiningGC ? "Good" : Math.random() > 0.8 ? "Good" : "Weak";
-    // Segregation occasionally set
     const segRand = Math.random();
     const segregation: Segregation | null = segRand > 0.985 ? "Relocated" : segRand > 0.97 ? "Terminated" : segRand > 0.95 ? "Warning" : null;
-    // Sheet status: Black if terminated/relocated, Green if excel yes and aiChatAdded, else Red sometimes
     let sheetStatus: SheetStatus = "Red";
     if (segregation === "Terminated" || segregation === "Relocated") sheetStatus = "Black";
-    else if (excelSubmitted === "Yes" && aiChatAdded && !dataMiningGC) sheetStatus = "Red";
     else if (excelSubmitted === "Yes" && (aiChatAdded || dataMiningGC)) sheetStatus = "Green";
     else sheetStatus = Math.random() > 0.7 ? "Red" : "Green";
     const dataRepurposed: YesNo = Math.random() > 0.8 ? "Yes" : "No";
 
     out.push({
-      id: `${i + 1}`,
-      name,
-      email,
+      id: `${Date.now()}-${i}`,
+      name: "",
+      email: "",
       statusActivity,
       excelSubmitted,
       aiChatAdded,
@@ -200,6 +152,10 @@ export default function Index() {
   const [filterSheet, setFilterSheet] = useState<string>("All");
   const [filterPerf, setFilterPerf] = useState<string>("All");
 
+  // Pagination
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
+
   useEffect(() => {
     fetch("/api/demo").catch(() => void 0);
   }, []);
@@ -212,13 +168,19 @@ export default function Index() {
         const q = search.trim().toLowerCase();
         if (!q) return true;
         return (
-          i.name.toLowerCase().includes(q) ||
-          i.email.toLowerCase().includes(q) ||
+          (i.name || "").toLowerCase().includes(q) ||
+          (i.email || "").toLowerCase().includes(q) ||
           (i.segregation ?? "").toLowerCase().includes(q)
         );
       })
-      .sort((a, b) => Number(b.id) - Number(a.id));
+      .sort((a, b) => Number(b.id.split("-")[1] || 0) - Number(a.id.split("-")[1] || 0));
   }, [interns, search, filterSheet, filterPerf]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const paginated = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    return filtered.slice(start, start + pageSize);
+  }, [filtered, page, pageSize]);
 
   const summary = useMemo(() => {
     const total = interns.length;
@@ -263,7 +225,6 @@ export default function Index() {
       prev.map((p) => {
         if (p.id !== id) return p;
         const updated = { ...p, speakersCount: Math.max(0, Math.min(1000, Math.floor(count))) };
-        // if reached target, mark sheetStatus green unless segregated
         if (updated.speakersCount >= updated.speakersTarget && (!updated.segregation || (updated.segregation !== "Terminated" && updated.segregation !== "Relocated"))) {
           updated.sheetStatus = "Green";
         }
@@ -296,6 +257,12 @@ export default function Index() {
       }),
     );
   }
+  function setName(id: string, name: string) {
+    setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, name } : p)));
+  }
+  function setEmail(id: string, email: string) {
+    setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, email } : p)));
+  }
 
   return (
     <div className="space-y-6">
@@ -313,7 +280,7 @@ export default function Index() {
               className="bg-gradient-to-r from-indigo-500 to-violet-600 text-white"
               onClick={() => setInterns((prev) => [...generateSeedInterns(50), ...prev])}
             >
-              + Add 50 Seed
+              + Add 50 Blank Rows
             </Button>
           </div>
         </div>
@@ -352,6 +319,20 @@ export default function Index() {
               <SelectItem value="Weak">Weak</SelectItem>
             </SelectContent>
           </Select>
+
+          <div className="ml-auto flex items-center gap-2">
+            <div className="text-sm text-muted-foreground">Rows per page</div>
+            <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setPage(1); }}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="25">25</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </section>
 
@@ -373,7 +354,7 @@ export default function Index() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((i) => (
+            {paginated.map((i) => (
               <TableRow
                 key={i.id}
                 className={cn(
@@ -385,13 +366,13 @@ export default function Index() {
                   <div className="flex items-center gap-3">
                     <div
                       className="h-8 w-8 shrink-0 rounded-full text-white grid place-items-center text-sm font-bold"
-                      style={{ backgroundColor: `hsl(${stringToHue(i.name)}, 65%, 45%)` }}
+                      style={{ backgroundColor: `hsl(${stringToHue(i.name || i.id)}, 65%, 45%)` }}
                     >
                       {initials(i.name)}
                     </div>
-                    <div className="min-w-0">
-                      <div className="truncate font-medium">{i.name}</div>
-                      <div className="truncate text-xs text-muted-foreground">{i.email}</div>
+                    <div className="min-w-0 grid gap-1">
+                      <Input placeholder="Name" value={i.name} onChange={(e) => setName(i.id, e.target.value)} />
+                      <Input placeholder="Email" value={i.email} onChange={(e) => setEmail(i.id, e.target.value)} />
                     </div>
                   </div>
                 </TableCell>
@@ -536,6 +517,20 @@ export default function Index() {
             ))}
           </TableBody>
         </Table>
+
+        {/* Pagination controls */}
+        <div className="flex items-center justify-between p-4">
+          <div className="text-sm text-muted-foreground">Showing {paginated.length} of {filtered.length} results</div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" onClick={() => setPage((p) => Math.max(1, p - 1))}>
+              Prev
+            </Button>
+            <div className="px-3">Page {page} / {totalPages}</div>
+            <Button variant="outline" onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+              Next
+            </Button>
+          </div>
+        </div>
       </section>
     </div>
   );
