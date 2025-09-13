@@ -646,6 +646,22 @@ export default function Index() {
                   </Select>
                 </TableCell>
 
+                {filterPerf === "Weak" ? (
+                  <TableCell>
+                    <Select value={String(i.warningLevel ?? "None")} onValueChange={(v) => setWarningLevel(i.id, v === "None" ? null : Number(v))}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="None">None</SelectItem>
+                        <SelectItem value="1">1</SelectItem>
+                        <SelectItem value="2">2</SelectItem>
+                        <SelectItem value="3">3</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
+                ) : null}
+
                 <TableCell>
                   <Select
                     value={i.segregation ?? "None"}
