@@ -415,7 +415,7 @@ export default function Index() {
                     className="rounded px-2 py-1 text-sm"
                     aria-label="toggle ai chat"
                   >
-                    {i.aiChatAdded ? <span className="text-emerald-600 font-bold">✔</span> : <span className="text-rose-600 font-bold">✘</span>}
+                    {i.aiChatAdded ? <span className="text-emerald-600 font-bold">✔</span> : <span className="text-rose-600 font-bold">���</span>}
                   </button>
                 </TableCell>
 
@@ -499,19 +499,23 @@ export default function Index() {
                 </TableCell>
 
                 <TableCell>
-                  <Select value={i.dataRepurposed} onValueChange={(v) => setDataRepurposed(i.id, v as any)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Yes">
-                        <span className="text-emerald-600">Yes</span>
-                      </SelectItem>
-                      <SelectItem value="No">
-                        <span className="text-rose-600">No</span>
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                  {i.sheetStatus === "Black" ? (
+                    <Select value={i.dataRepurposed} onValueChange={(v) => setDataRepurposed(i.id, v as any)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Yes">
+                          <span className="text-emerald-600">Yes</span>
+                        </SelectItem>
+                        <SelectItem value="No">
+                          <span className="text-rose-600">No</span>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">—</div>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
