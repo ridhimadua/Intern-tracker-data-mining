@@ -28,65 +28,29 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-// Intern type
-type Status = "Active" | "Offer" | "Completed" | "Offboarded";
+type StatusActivity = "Active" | "Inactive";
+type YesNo = "Yes" | "No";
+type Performance = "Good" | "Weak";
+type Segregation = "Resign" | "Warning" | "Terminated" | "Relocated";
+type SheetStatus = "Green" | "Red" | "Black";
 
 type Intern = {
   id: string;
   name: string;
   email: string;
-  department: string;
-  mentor: string;
-  startDate: string; // ISO date
-  status: Status;
-  score: number; // 0 - 100
+  statusActivity: StatusActivity;
+  excelSubmitted: YesNo;
+  aiChatAdded: boolean;
+  dataMiningGC: boolean;
+  speakersCount: number;
+  speakersTarget: number; // usually 100
+  performance: Performance;
+  segregation: Segregation | null;
+  sheetStatus: SheetStatus;
+  dataRepurposed: YesNo;
 };
 
-const seedInterns: Intern[] = [
-  {
-    id: "1",
-    name: "Ava Patel",
-    email: "ava.patel@example.com",
-    department: "Engineering",
-    mentor: "M. Nguyen",
-    startDate: new Date().toISOString().slice(0, 10),
-    status: "Active",
-    score: 92,
-  },
-  {
-    id: "2",
-    name: "Liam Johnson",
-    email: "liam.johnson@example.com",
-    department: "Design",
-    mentor: "S. Kaur",
-    startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString().slice(0, 10),
-    status: "Active",
-    score: 81,
-  },
-  {
-    id: "3",
-    name: "Maya Chen",
-    email: "maya.chen@example.com",
-    department: "Marketing",
-    mentor: "R. Davis",
-    startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 90).toISOString().slice(0, 10),
-    status: "Completed",
-    score: 88,
-  },
-  {
-    id: "4",
-    name: "Ethan García",
-    email: "ethan.garcia@example.com",
-    department: "Engineering",
-    mentor: "K. Brown",
-    startDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString().slice(0, 10),
-    status: "Offer",
-    score: 75,
-  },
-];
-
 const departments = ["Engineering", "Design", "Marketing", "Product", "HR"];
-const statuses: Status[] = ["Active", "Offer", "Completed", "Offboarded"];
 
 function initials(name: string) {
   return name
@@ -105,9 +69,35 @@ function stringToHue(str: string) {
 }
 
 function exportToCsv(rows: Intern[]) {
-  const header = ["Name", "Email", "Department", "Mentor", "Start Date", "Status", "Score"];
-  const body = rows.map((r) => [r.name, r.email, r.department, r.mentor, r.startDate, r.status, String(r.score)]);
-  const csv = [header, ...body].map((r) => r.map((x) => `"${String(x).replaceAll('"', '""')}"`).join(",")).join("\n");
+  const header = [
+    "Name",
+    "Email",
+    "Status",
+    "ExcelSubmitted",
+    "AIChatAdded",
+    "DataMiningGC",
+    "SpeakersCount",
+    "Performance",
+    "Segregation",
+    "SheetStatus",
+    "DataRepurposed",
+  ];
+  const body = rows.map((r) => [
+    r.name,
+    r.email,
+    r.statusActivity,
+    r.excelSubmitted,
+    r.aiChatAdded ? "Yes" : "No",
+    r.dataMiningGC ? "Yes" : "No",
+    r.speakersCount,
+    r.performance,
+    r.segregation ?? "",
+    r.sheetStatus,
+    r.dataRepurposed,
+  ]);
+  const csv = [header, ...body]
+    .map((r) => r.map((x) => `"${String(x).replaceAll('"', '""')}"`).join(","))
+    .join("\n");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -117,171 +107,285 @@ function exportToCsv(rows: Intern[]) {
   URL.revokeObjectURL(url);
 }
 
-export default function Index() {
-  const [interns, setInterns] = useState<Intern[]>(seedInterns);
-  const [search, setSearch] = useState("");
-  const [dept, setDept] = useState<string>("All");
-  const [status, setStatus] = useState<string>("All");
+function generateSeedInterns(count: number): Intern[] {
+  const first = [
+    "Ava",
+    "Liam",
+    "Maya",
+    "Ethan",
+    "Noah",
+    "Olivia",
+    "Sophia",
+    "Lucas",
+    "Zoe",
+    "Isabella",
+    "Mason",
+    "Mia",
+    "Amelia",
+    "Harper",
+    "Camila",
+    "Aria",
+    "Elijah",
+    "Logan",
+    "Charlotte",
+    "Henry",
+  ];
+  const last = [
+    "Patel",
+    "Johnson",
+    "Chen",
+    "Garcia",
+    "Nguyen",
+    "Smith",
+    "Brown",
+    "Davis",
+    "Martinez",
+    "Lopez",
+    "Wilson",
+    "Anderson",
+    "Thomas",
+    "Taylor",
+    "Moore",
+    "Jackson",
+  ];
 
-  // Demo server call to ensure backend is wired
+  const out: Intern[] = [];
+  for (let i = 0; i < count; i++) {
+    const f = first[Math.floor(Math.random() * first.length)];
+    const l = last[Math.floor(Math.random() * last.length)];
+    const name = `${f} ${l}`;
+    const email = `${f.toLowerCase()}.${l.toLowerCase()}${i}@example.com`;
+    const r = Math.random();
+    const statusActivity: StatusActivity = r > 0.15 ? "Active" : "Inactive";
+    const excelSubmitted: YesNo = Math.random() > 0.35 ? "Yes" : "No";
+    const aiChatAdded = Math.random() > 0.5;
+    const dataMiningGC = Math.random() > 0.5;
+    const speakersCount = Math.floor(Math.random() * 120); // 0-119
+    const speakersTarget = 100;
+    // Simple performance heuristic
+    const performance: Performance = speakersCount > 60 && aiChatAdded && dataMiningGC ? "Good" : Math.random() > 0.8 ? "Good" : "Weak";
+    // Segregation occasionally set
+    const segRand = Math.random();
+    const segregation: Segregation | null = segRand > 0.985 ? "Relocated" : segRand > 0.97 ? "Terminated" : segRand > 0.95 ? "Warning" : null;
+    // Sheet status: Black if terminated/relocated, Green if excel yes and aiChatAdded, else Red sometimes
+    let sheetStatus: SheetStatus = "Red";
+    if (segregation === "Terminated" || segregation === "Relocated") sheetStatus = "Black";
+    else if (excelSubmitted === "Yes" && aiChatAdded && !dataMiningGC) sheetStatus = "Red";
+    else if (excelSubmitted === "Yes" && (aiChatAdded || dataMiningGC)) sheetStatus = "Green";
+    else sheetStatus = Math.random() > 0.7 ? "Red" : "Green";
+    const dataRepurposed: YesNo = Math.random() > 0.8 ? "Yes" : "No";
+
+    out.push({
+      id: `${i + 1}`,
+      name,
+      email,
+      statusActivity,
+      excelSubmitted,
+      aiChatAdded,
+      dataMiningGC,
+      speakersCount,
+      speakersTarget,
+      performance,
+      segregation,
+      sheetStatus,
+      dataRepurposed,
+    });
+  }
+  return out;
+}
+
+export default function Index() {
+  const [interns, setInterns] = useState<Intern[]>(() => generateSeedInterns(550));
+  const [search, setSearch] = useState("");
+  const [filterSheet, setFilterSheet] = useState<string>("All");
+  const [filterPerf, setFilterPerf] = useState<string>("All");
+
   useEffect(() => {
     fetch("/api/demo").catch(() => void 0);
   }, []);
 
   const filtered = useMemo(() => {
     return interns
-      .filter((i) => (dept === "All" ? true : i.department === dept))
-      .filter((i) => (status === "All" ? true : i.status === status))
+      .filter((i) => (filterSheet === "All" ? true : i.sheetStatus === filterSheet))
+      .filter((i) => (filterPerf === "All" ? true : i.performance === filterPerf))
       .filter((i) => {
         const q = search.trim().toLowerCase();
         if (!q) return true;
         return (
           i.name.toLowerCase().includes(q) ||
           i.email.toLowerCase().includes(q) ||
-          i.mentor.toLowerCase().includes(q) ||
-          i.department.toLowerCase().includes(q)
+          (i.segregation ?? "").toLowerCase().includes(q)
         );
       })
-      .sort((a, b) => b.startDate.localeCompare(a.startDate));
-  }, [interns, search, dept, status]);
+      .sort((a, b) => Number(b.id) - Number(a.id));
+  }, [interns, search, filterSheet, filterPerf]);
 
-  const stats = useMemo(() => {
-    const active = interns.filter((i) => i.status === "Active").length;
-    const offers = interns.filter((i) => i.status === "Offer").length;
-    const completed = interns.filter((i) => i.status === "Completed").length;
-    const avgScore = interns.length
-      ? Math.round(interns.reduce((s, i) => s + i.score, 0) / interns.length)
-      : 0;
-    return { active, offers, completed, avgScore };
+  const summary = useMemo(() => {
+    const total = interns.length;
+    const green = interns.filter((i) => i.sheetStatus === "Green").length;
+    const red = interns.filter((i) => i.sheetStatus === "Red").length;
+    const black = interns.filter((i) => i.sheetStatus === "Black").length;
+    const active = interns.filter((i) => i.statusActivity === "Active").length;
+    const inactive = total - active;
+    const excelYes = interns.filter((i) => i.excelSubmitted === "Yes").length;
+    const excelNo = total - excelYes;
+    const tasksCompleted = interns.filter((i) => i.aiChatAdded && i.dataMiningGC && i.speakersCount >= i.speakersTarget).length;
+    const good = interns.filter((i) => i.performance === "Good").length;
+    const weak = interns.filter((i) => i.performance === "Weak").length;
+    const repurposedYes = interns.filter((i) => i.dataRepurposed === "Yes").length;
+    const repurposedNo = total - repurposedYes;
+    return {
+      total,
+      green,
+      red,
+      black,
+      active,
+      inactive,
+      excelYes,
+      excelNo,
+      tasksCompleted,
+      good,
+      weak,
+      repurposedYes,
+      repurposedNo,
+    };
   }, [interns]);
 
-  // Add intern dialog state
-  const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<Omit<Intern, "id">>({
-    name: "",
-    email: "",
-    department: departments[0],
-    mentor: "",
-    startDate: new Date().toISOString().slice(0, 10),
-    status: "Active",
-    score: 80,
-  });
-
-  function addIntern() {
-    if (!form.name || !form.email) return;
-    const id = Math.random().toString(36).slice(2, 9);
-    setInterns((prev) => [{ id, ...form }, ...prev]);
-    setOpen(false);
-    setForm({
-      name: "",
-      email: "",
-      department: departments[0],
-      mentor: "",
-      startDate: new Date().toISOString().slice(0, 10),
-      status: "Active",
-      score: 80,
-    });
+  // inline edits
+  function toggleAiChat(id: string) {
+    setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, aiChatAdded: !p.aiChatAdded } : p)));
+  }
+  function toggleDataMining(id: string) {
+    setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, dataMiningGC: !p.dataMiningGC } : p)));
+  }
+  function updateSpeakers(id: string, count: number) {
+    setInterns((prev) =>
+      prev.map((p) => {
+        if (p.id !== id) return p;
+        const updated = { ...p, speakersCount: Math.max(0, Math.min(1000, Math.floor(count))) };
+        // if reached target, mark sheetStatus green unless segregated
+        if (updated.speakersCount >= updated.speakersTarget && (!updated.segregation || (updated.segregation !== "Terminated" && updated.segregation !== "Relocated"))) {
+          updated.sheetStatus = "Green";
+        }
+        return updated;
+      }),
+    );
+  }
+  function setSheetStatus(id: string, status: SheetStatus) {
+    setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, sheetStatus: status } : p)));
+  }
+  function setStatusActivity(id: string, s: StatusActivity) {
+    setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, statusActivity: s } : p)));
+  }
+  function setExcelSubmitted(id: string, v: YesNo) {
+    setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, excelSubmitted: v } : p)));
+  }
+  function setDataRepurposed(id: string, v: YesNo) {
+    setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, dataRepurposed: v } : p)));
+  }
+  function setPerformance(id: string, v: Performance) {
+    setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, performance: v } : p)));
+  }
+  function setSegregation(id: string, v: Segregation | null) {
+    setInterns((prev) =>
+      prev.map((p) => {
+        if (p.id !== id) return p;
+        const updated = { ...p, segregation: v };
+        if (v === "Terminated" || v === "Relocated") updated.sheetStatus = "Black";
+        return updated;
+      }),
+    );
   }
 
   return (
-    <div className="space-y-8">
-      {/* Hero */}
-      <section className="rounded-xl border bg-card p-6 sm:p-8">
-        <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-6">
+      <section className="rounded-xl border bg-card p-6">
+        <div className="flex items-center justify-between gap-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              Track interns with clarity
-            </h1>
-            <p className="mt-2 max-w-2xl text-muted-foreground">
-              Manage onboarding, performance, and progress across departments. Fast search, flexible filters, and easy exports.
-            </p>
+            <h2 className="text-2xl font-extrabold">Intern Tracker</h2>
+            <p className="text-sm text-muted-foreground">Overview and management of interns and sheet status.</p>
           </div>
-          <div className="flex gap-3">
-            <Button
-              className="bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow hover:from-indigo-600 hover:to-violet-700"
-              onClick={() => setOpen(true)}
-            >
-              Add Intern
-            </Button>
+          <div className="flex gap-2">
             <Button variant="outline" onClick={() => exportToCsv(filtered)}>
-              Export CSV
+              Export CSV (filtered)
+            </Button>
+            <Button
+              className="bg-gradient-to-r from-indigo-500 to-violet-600 text-white"
+              onClick={() => setInterns((prev) => [...generateSeedInterns(50), ...prev])}
+            >
+              + Add 50 Seed
             </Button>
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          <div className="sm:col-span-1">
-            <Input
-              placeholder="Search by name, email, mentor, or department"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <div className="sm:col-span-1">
-            <Select value={dept} onValueChange={setDept}>
-              <SelectTrigger>
-                <SelectValue placeholder="Department" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Departments</SelectItem>
-                {departments.map((d) => (
-                  <SelectItem value={d} key={d}>
-                    {d}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="sm:col-span-1">
-            <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger>
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All Statuses</SelectItem>
-                {statuses.map((s) => (
-                  <SelectItem value={s} key={s}>
-                    {s}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+        {/* Summary */}
+        <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+          <SummaryCard label="Total Green sheets" value={summary.green} color="emerald" />
+          <SummaryCard label="Total Red sheets" value={summary.red} color="rose" />
+          <SummaryCard label="Total Black sheets" value={summary.black} color="zinc" />
+          <SummaryCard label="Active vs Inactive" value={`${summary.active} / ${summary.inactive}`} color="sky" />
+          <SummaryCard label="Excel Yes/No" value={`${summary.excelYes} / ${summary.excelNo}`} color="amber" />
+          <SummaryCard label="Repurposed Yes/No" value={`${summary.repurposedYes} / ${summary.repurposedNo}`} color="fuchsia" />
+        </div>
+
+        {/* Filters row */}
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <Input placeholder="Search name or email" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Select value={filterSheet} onValueChange={setFilterSheet}>
+            <SelectTrigger>
+              <SelectValue placeholder="Sheet status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All Sheets</SelectItem>
+              <SelectItem value="Green">Green</SelectItem>
+              <SelectItem value="Red">Red</SelectItem>
+              <SelectItem value="Black">Black</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filterPerf} onValueChange={setFilterPerf}>
+            <SelectTrigger>
+              <SelectValue placeholder="Performance" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All</SelectItem>
+              <SelectItem value="Good">Good</SelectItem>
+              <SelectItem value="Weak">Weak</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Active interns" value={stats.active} trendLabel="Currently onboarded" color="from-emerald-500 to-teal-500" />
-        <StatCard label="Offers" value={stats.offers} trendLabel="Awaiting start" color="from-sky-500 to-cyan-500" />
-        <StatCard label="Completed" value={stats.completed} trendLabel="Program finished" color="from-indigo-500 to-violet-600" />
-        <StatCard label="Avg score" value={`${stats.avgScore}%`} trendLabel="Performance" color="from-fuchsia-500 to-pink-500" />
-      </section>
-
-      {/* Table */}
-      <section className="rounded-xl border bg-card">
+      <section className="rounded-xl border bg-card overflow-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Intern</TableHead>
-              <TableHead className="hidden sm:table-cell">Department</TableHead>
-              <TableHead className="hidden lg:table-cell">Mentor</TableHead>
-              <TableHead>Start date</TableHead>
+              <TableHead>Intern Name</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Score</TableHead>
+              <TableHead>Excel Submitted</TableHead>
+              <TableHead>AI Chat Team</TableHead>
+              <TableHead>Data Mining GC</TableHead>
+              <TableHead>Speakers Count</TableHead>
+              <TableHead>Speakers Progress</TableHead>
+              <TableHead>Performance</TableHead>
+              <TableHead>Segregation</TableHead>
+              <TableHead>Sheet Status</TableHead>
+              <TableHead>Data Repurposed</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.map((i) => (
-              <TableRow key={i.id} className="">
+              <TableRow
+                key={i.id}
+                className={cn(
+                  i.performance === "Good" ? "bg-purple-50" : "",
+                  i.performance === "Weak" ? "bg-amber-50" : "",
+                )}
+              >
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <div
-                      className="h-9 w-9 shrink-0 rounded-full text-white grid place-items-center text-xs font-bold"
-                      style={{
-                        backgroundColor: `hsl(${stringToHue(i.name)}, 70%, 55%)`,
-                      }}
+                      className="h-8 w-8 shrink-0 rounded-full text-white grid place-items-center text-sm font-bold"
+                      style={{ backgroundColor: `hsl(${stringToHue(i.name)}, 65%, 45%)` }}
                     >
                       {initials(i.name)}
                     </div>
@@ -291,147 +395,168 @@ export default function Index() {
                     </div>
                   </div>
                 </TableCell>
-                <TableCell className="hidden sm:table-cell">{i.department}</TableCell>
-                <TableCell className="hidden lg:table-cell">{i.mentor}</TableCell>
-                <TableCell>{new Date(i.startDate).toLocaleDateString()}</TableCell>
+
                 <TableCell>
-                  <StatusBadge status={i.status} />
+                  <Select value={i.statusActivity} onValueChange={(v) => setStatusActivity(i.id, v as any)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Active">
+                        <span className="text-emerald-600 font-semibold">A</span> Active
+                      </SelectItem>
+                      <SelectItem value="Inactive">
+                        <span className="text-rose-600 font-semibold">I</span> Inactive
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </TableCell>
-                <TableCell className="text-right">
-                  <span className={cn("font-semibold", i.score >= 85 && "text-emerald-600", i.score < 70 && "text-destructive")}>{i.score}%</span>
+
+                <TableCell>
+                  <Select value={i.excelSubmitted} onValueChange={(v) => setExcelSubmitted(i.id, v as any)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Yes">
+                        <span className="text-emerald-600">Yes</span>
+                      </SelectItem>
+                      <SelectItem value="No">
+                        <span className="text-rose-600">No</span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+
+                <TableCell>
+                  <button
+                    onClick={() => toggleAiChat(i.id)}
+                    className="rounded px-2 py-1 text-sm"
+                    aria-label="toggle ai chat"
+                  >
+                    {i.aiChatAdded ? <span className="text-emerald-600 font-bold">✔</span> : <span className="text-rose-600 font-bold">✘</span>}
+                  </button>
+                </TableCell>
+
+                <TableCell>
+                  <button
+                    onClick={() => toggleDataMining(i.id)}
+                    className="rounded px-2 py-1 text-sm"
+                    aria-label="toggle data mining"
+                  >
+                    {i.dataMiningGC ? <span className="text-emerald-600 font-bold">✔</span> : <span className="text-rose-600 font-bold">✘</span>}
+                  </button>
+                </TableCell>
+
+                <TableCell>
+                  <Input
+                    type="number"
+                    className="w-24"
+                    value={i.speakersCount}
+                    onChange={(e) => updateSpeakers(i.id, Number(e.target.value || 0))}
+                  />
+                </TableCell>
+
+                <TableCell>
+                  <div className="w-36">
+                    <div className="h-2 w-full rounded bg-muted">
+                      <div
+                        className={"h-2 rounded bg-emerald-500"}
+                        style={{ width: `${Math.min(100, Math.round((i.speakersCount / i.speakersTarget) * 100))}%` }}
+                      />
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {i.speakersCount}/{i.speakersTarget} {i.speakersCount >= i.speakersTarget ? "(Complete)" : ""}
+                    </div>
+                  </div>
+                </TableCell>
+
+                <TableCell>
+                  <Select value={i.performance} onValueChange={(v) => setPerformance(i.id, v as any)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Good">Good</SelectItem>
+                      <SelectItem value="Weak">Weak</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+
+                <TableCell>
+                  <Select value={i.segregation ?? ""} onValueChange={(v) => setSegregation(i.id, (v as any) || null)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="Resign">Resign</SelectItem>
+                      <SelectItem value="Warning">Warning</SelectItem>
+                      <SelectItem value="Terminated">Terminated</SelectItem>
+                      <SelectItem value="Relocated">Relocated</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+
+                <TableCell>
+                  <Select value={i.sheetStatus} onValueChange={(v) => setSheetStatus(i.id, v as any)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Green">
+                        <span className="text-emerald-600">●</span> Green
+                      </SelectItem>
+                      <SelectItem value="Red">
+                        <span className="text-rose-600">●</span> Red
+                      </SelectItem>
+                      <SelectItem value="Black">
+                        <span className="text-zinc-900">●</span> Black
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+
+                <TableCell>
+                  <Select value={i.dataRepurposed} onValueChange={(v) => setDataRepurposed(i.id, v as any)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Yes">
+                        <span className="text-emerald-600">Yes</span>
+                      </SelectItem>
+                      <SelectItem value="No">
+                        <span className="text-rose-600">No</span>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </TableCell>
               </TableRow>
             ))}
-            {filtered.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                  No interns match your filters.
-                </TableCell>
-              </TableRow>
-            )}
           </TableBody>
         </Table>
       </section>
-
-      {/* Add Intern Dialog */}
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>
-          <span />
-        </DialogTrigger>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add a new intern</DialogTitle>
-            <DialogDescription>Fill in details to add to your tracker.</DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-2">
-            <div className="grid gap-2">
-              <label className="text-sm font-medium">Name</label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-            </div>
-            <div className="grid gap-2">
-              <label className="text-sm font-medium">Email</label>
-              <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-            </div>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Department</label>
-                <Select value={form.department} onValueChange={(v) => setForm({ ...form, department: v })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {departments.map((d) => (
-                      <SelectItem key={d} value={d}>
-                        {d}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Mentor</label>
-                <Input value={form.mentor} onChange={(e) => setForm({ ...form, mentor: e.target.value })} />
-              </div>
-            </div>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Start date</label>
-                <Input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} />
-              </div>
-              <div className="grid gap-2">
-                <label className="text-sm font-medium">Status</label>
-                <Select value={form.status} onValueChange={(v: Status) => setForm({ ...form, status: v })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statuses.map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {s}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <label className="text-sm font-medium">Performance score</label>
-              <Input
-                type="number"
-                min={0}
-                max={100}
-                value={form.score}
-                onChange={(e) => setForm({ ...form, score: Number(e.target.value || 0) })}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              className="bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow hover:from-indigo-600 hover:to-violet-700"
-              onClick={addIntern}
-              disabled={!form.name || !form.email}
-            >
-              Save
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
 
-function StatCard({
-  label,
-  value,
-  trendLabel,
-  color,
-}: {
-  label: string;
-  value: number | string;
-  trendLabel: string;
-  color: string; // tailwind gradient classes
-}) {
+function SummaryCard({ label, value, color }: { label: string; value: number | string; color: string }) {
+  const gradients: Record<string, string> = {
+    emerald: "from-emerald-400 to-teal-400",
+    rose: "from-rose-400 to-rose-600",
+    zinc: "from-zinc-400 to-zinc-700",
+    sky: "from-sky-400 to-cyan-400",
+    amber: "from-amber-400 to-orange-400",
+    fuchsia: "from-fuchsia-400 to-pink-500",
+  };
   return (
-    <div className="overflow-hidden rounded-xl border bg-card">
-      <div className={cn("h-1 w-full bg-gradient-to-r", color)} />
-      <div className="p-5">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
-        <div className="mt-2 text-2xl font-bold">{value}</div>
-        <div className="mt-1 text-xs text-muted-foreground">{trendLabel}</div>
+    <div className="rounded-md border bg-background p-3">
+      <div className={"h-1 w-full rounded-md bg-gradient-to-r " + (gradients[color] ?? gradients.emerald)} />
+      <div className="mt-3">
+        <div className="text-xs text-muted-foreground">{label}</div>
+        <div className="mt-1 font-bold text-xl">{value}</div>
       </div>
     </div>
   );
-}
-
-function StatusBadge({ status }: { status: Status }) {
-  const map: Record<Status, string> = {
-    Active: "bg-emerald-500/15 text-emerald-700 border-emerald-200",
-    Offer: "bg-sky-500/15 text-sky-700 border-sky-200",
-    Completed: "bg-indigo-500/15 text-indigo-700 border-indigo-200",
-    Offboarded: "bg-zinc-500/15 text-zinc-700 border-zinc-300",
-  };
-  return <Badge className={cn("px-2.5", map[status])}>{status}</Badge>;
 }
