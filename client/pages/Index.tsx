@@ -419,6 +419,20 @@ export default function Index() {
             </SelectContent>
           </Select>
 
+          <Select value={filterSeg} onValueChange={setFilterSeg}>
+            <SelectTrigger>
+              <SelectValue placeholder="Segregation" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="All">All</SelectItem>
+              <SelectItem value="None">None</SelectItem>
+              <SelectItem value="Resign">Resign</SelectItem>
+              <SelectItem value="Warning">Warning</SelectItem>
+              <SelectItem value="Terminated">Terminated</SelectItem>
+              <SelectItem value="Relocated">Relocated</SelectItem>
+            </SelectContent>
+          </Select>
+
           <div className="ml-auto flex items-center gap-2">
             <div className="text-sm text-muted-foreground">Rows per page</div>
             <Select
