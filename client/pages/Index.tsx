@@ -196,6 +196,9 @@ export default function Index() {
       .filter((i) =>
         filterPerf === "All" ? true : i.performance === filterPerf,
       )
+      .filter((i) =>
+        filterSeg === "All" ? true : String(i.segregation ?? "None") === filterSeg,
+      )
       .filter((i) => {
         const q = search.trim().toLowerCase();
         if (!q) return true;
@@ -209,7 +212,7 @@ export default function Index() {
         (a, b) =>
           Number(b.id.split("-")[1] || 0) - Number(a.id.split("-")[1] || 0),
       );
-  }, [interns, search, filterSheet, filterPerf]);
+  }, [interns, search, filterSheet, filterPerf, filterSeg]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const paginated = useMemo(() => {
