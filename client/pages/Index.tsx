@@ -432,10 +432,10 @@ export default function Index() {
       </section>
 
       <section className="rounded-xl border bg-card overflow-auto">
-        <Table>
+        <Table className="table-auto">
           <TableHeader>
             <TableRow>
-              <TableHead>Intern Name</TableHead>
+              <TableHead className="w-72">Intern Name</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Excel Submitted</TableHead>
               <TableHead>AI Chat Team</TableHead>
@@ -467,19 +467,19 @@ export default function Index() {
                     >
                       {initials(i.name)}
                     </div>
-                    <div className="min-w-0 grid gap-1">
+                    <div className="min-w-0 flex-1">
                       <input
-                        placeholder="Name"
+                        placeholder="Full name"
                         value={i.name ?? ""}
                         onChange={(e) => setName(i.id, e.target.value)}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                        className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                       />
                       <input
                         type="email"
-                        placeholder="Email"
+                        placeholder="Email (optional)"
                         value={i.email ?? ""}
                         onChange={(e) => setEmail(i.id, e.target.value)}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                        className="mt-1 w-48 rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                       />
                     </div>
                   </div>
