@@ -65,7 +65,8 @@ function initials(name: string) {
 
 function stringToHue(str: string) {
   let hash = 0;
-  for (let i = 0; i < (str || "").length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < (str || "").length; i++)
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
   return Math.abs(hash) % 360;
 }
 
@@ -112,18 +113,33 @@ function generateSeedInterns(count: number): Intern[] {
   const out: Intern[] = [];
   for (let i = 0; i < count; i++) {
     const statusRand = Math.random();
-    const statusActivity: StatusActivity = statusRand > 0.15 ? "Active" : "Inactive";
+    const statusActivity: StatusActivity =
+      statusRand > 0.15 ? "Active" : "Inactive";
     const excelSubmitted: YesNo = Math.random() > 0.35 ? "Yes" : "No";
     const aiChatAdded = Math.random() > 0.5;
     const dataMiningGC = Math.random() > 0.5;
     const speakersCount = Math.floor(Math.random() * 120); // 0-119
     const speakersTarget = 100;
-    const performance: Performance = speakersCount > 60 && aiChatAdded && dataMiningGC ? "Good" : Math.random() > 0.8 ? "Good" : "Weak";
+    const performance: Performance =
+      speakersCount > 60 && aiChatAdded && dataMiningGC
+        ? "Good"
+        : Math.random() > 0.8
+          ? "Good"
+          : "Weak";
     const segRand = Math.random();
-    const segregation: Segregation | null = segRand > 0.985 ? "Relocated" : segRand > 0.97 ? "Terminated" : segRand > 0.95 ? "Warning" : null;
+    const segregation: Segregation | null =
+      segRand > 0.985
+        ? "Relocated"
+        : segRand > 0.97
+          ? "Terminated"
+          : segRand > 0.95
+            ? "Warning"
+            : null;
     let sheetStatus: SheetStatus = "Red";
-    if (segregation === "Terminated" || segregation === "Relocated") sheetStatus = "Black";
-    else if (excelSubmitted === "Yes" && (aiChatAdded || dataMiningGC)) sheetStatus = "Green";
+    if (segregation === "Terminated" || segregation === "Relocated")
+      sheetStatus = "Black";
+    else if (excelSubmitted === "Yes" && (aiChatAdded || dataMiningGC))
+      sheetStatus = "Green";
     else sheetStatus = Math.random() > 0.7 ? "Red" : "Green";
     const dataRepurposed: YesNo = Math.random() > 0.8 ? "Yes" : "No";
 
@@ -147,7 +163,9 @@ function generateSeedInterns(count: number): Intern[] {
 }
 
 export default function Index() {
-  const [interns, setInterns] = useState<Intern[]>(() => generateSeedInterns(550));
+  const [interns, setInterns] = useState<Intern[]>(() =>
+    generateSeedInterns(550),
+  );
   const [search, setSearch] = useState("");
   const [filterSheet, setFilterSheet] = useState<string>("All");
   const [filterPerf, setFilterPerf] = useState<string>("All");
@@ -162,8 +180,12 @@ export default function Index() {
 
   const filtered = useMemo(() => {
     return interns
-      .filter((i) => (filterSheet === "All" ? true : i.sheetStatus === filterSheet))
-      .filter((i) => (filterPerf === "All" ? true : i.performance === filterPerf))
+      .filter((i) =>
+        filterSheet === "All" ? true : i.sheetStatus === filterSheet,
+      )
+      .filter((i) =>
+        filterPerf === "All" ? true : i.performance === filterPerf,
+      )
       .filter((i) => {
         const q = search.trim().toLowerCase();
         if (!q) return true;
@@ -173,7 +195,10 @@ export default function Index() {
           (i.segregation ?? "").toLowerCase().includes(q)
         );
       })
-      .sort((a, b) => Number(b.id.split("-")[1] || 0) - Number(a.id.split("-")[1] || 0));
+      .sort(
+        (a, b) =>
+          Number(b.id.split("-")[1] || 0) - Number(a.id.split("-")[1] || 0),
+      );
   }, [interns, search, filterSheet, filterPerf]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
@@ -191,10 +216,15 @@ export default function Index() {
     const inactive = total - active;
     const excelYes = interns.filter((i) => i.excelSubmitted === "Yes").length;
     const excelNo = total - excelYes;
-    const tasksCompleted = interns.filter((i) => i.aiChatAdded && i.dataMiningGC && i.speakersCount >= i.speakersTarget).length;
+    const tasksCompleted = interns.filter(
+      (i) =>
+        i.aiChatAdded && i.dataMiningGC && i.speakersCount >= i.speakersTarget,
+    ).length;
     const good = interns.filter((i) => i.performance === "Good").length;
     const weak = interns.filter((i) => i.performance === "Weak").length;
-    const repurposedYes = interns.filter((i) => i.dataRepurposed === "Yes").length;
+    const repurposedYes = interns.filter(
+      (i) => i.dataRepurposed === "Yes",
+    ).length;
     const repurposedNo = total - repurposedYes;
     return {
       total,
@@ -215,17 +245,33 @@ export default function Index() {
 
   // inline edits
   function toggleAiChat(id: string) {
-    setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, aiChatAdded: !p.aiChatAdded } : p)));
+    setInterns((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, aiChatAdded: !p.aiChatAdded } : p,
+      ),
+    );
   }
   function toggleDataMining(id: string) {
-    setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, dataMiningGC: !p.dataMiningGC } : p)));
+    setInterns((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, dataMiningGC: !p.dataMiningGC } : p,
+      ),
+    );
   }
   function updateSpeakers(id: string, count: number) {
     setInterns((prev) =>
       prev.map((p) => {
         if (p.id !== id) return p;
-        const updated = { ...p, speakersCount: Math.max(0, Math.min(1000, Math.floor(count))) };
-        if (updated.speakersCount >= updated.speakersTarget && (!updated.segregation || (updated.segregation !== "Terminated" && updated.segregation !== "Relocated"))) {
+        const updated = {
+          ...p,
+          speakersCount: Math.max(0, Math.min(1000, Math.floor(count))),
+        };
+        if (
+          updated.speakersCount >= updated.speakersTarget &&
+          (!updated.segregation ||
+            (updated.segregation !== "Terminated" &&
+              updated.segregation !== "Relocated"))
+        ) {
           updated.sheetStatus = "Green";
         }
         return updated;
@@ -233,26 +279,37 @@ export default function Index() {
     );
   }
   function setSheetStatus(id: string, status: SheetStatus) {
-    setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, sheetStatus: status } : p)));
+    setInterns((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, sheetStatus: status } : p)),
+    );
   }
   function setStatusActivity(id: string, s: StatusActivity) {
-    setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, statusActivity: s } : p)));
+    setInterns((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, statusActivity: s } : p)),
+    );
   }
   function setExcelSubmitted(id: string, v: YesNo) {
-    setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, excelSubmitted: v } : p)));
+    setInterns((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, excelSubmitted: v } : p)),
+    );
   }
   function setDataRepurposed(id: string, v: YesNo) {
-    setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, dataRepurposed: v } : p)));
+    setInterns((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, dataRepurposed: v } : p)),
+    );
   }
   function setPerformance(id: string, v: Performance) {
-    setInterns((prev) => prev.map((p) => (p.id === id ? { ...p, performance: v } : p)));
+    setInterns((prev) =>
+      prev.map((p) => (p.id === id ? { ...p, performance: v } : p)),
+    );
   }
   function setSegregation(id: string, v: Segregation | null) {
     setInterns((prev) =>
       prev.map((p) => {
         if (p.id !== id) return p;
         const updated = { ...p, segregation: v };
-        if (v === "Terminated" || v === "Relocated") updated.sheetStatus = "Black";
+        if (v === "Terminated" || v === "Relocated")
+          updated.sheetStatus = "Black";
         return updated;
       }),
     );
@@ -270,7 +327,9 @@ export default function Index() {
         <div className="flex items-center justify-between gap-6">
           <div>
             <h2 className="text-2xl font-extrabold">Intern Tracker</h2>
-            <p className="text-sm text-muted-foreground">Overview and management of interns and sheet status.</p>
+            <p className="text-sm text-muted-foreground">
+              Overview and management of interns and sheet status.
+            </p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => exportToCsv(filtered)}>
@@ -278,7 +337,9 @@ export default function Index() {
             </Button>
             <Button
               className="bg-gradient-to-r from-indigo-500 to-violet-600 text-white"
-              onClick={() => setInterns((prev) => [...generateSeedInterns(50), ...prev])}
+              onClick={() =>
+                setInterns((prev) => [...generateSeedInterns(50), ...prev])
+              }
             >
               + Add 50 Blank Rows
             </Button>
@@ -287,17 +348,45 @@ export default function Index() {
 
         {/* Summary */}
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
-          <SummaryCard label="Total Green sheets" value={summary.green} color="emerald" />
-          <SummaryCard label="Total Red sheets" value={summary.red} color="rose" />
-          <SummaryCard label="Total Black sheets" value={summary.black} color="zinc" />
-          <SummaryCard label="Active vs Inactive" value={`${summary.active} / ${summary.inactive}`} color="sky" />
-          <SummaryCard label="Excel Yes/No" value={`${summary.excelYes} / ${summary.excelNo}`} color="amber" />
-          <SummaryCard label="Repurposed Yes/No" value={`${summary.repurposedYes} / ${summary.repurposedNo}`} color="fuchsia" />
+          <SummaryCard
+            label="Total Green sheets"
+            value={summary.green}
+            color="emerald"
+          />
+          <SummaryCard
+            label="Total Red sheets"
+            value={summary.red}
+            color="rose"
+          />
+          <SummaryCard
+            label="Total Black sheets"
+            value={summary.black}
+            color="zinc"
+          />
+          <SummaryCard
+            label="Active vs Inactive"
+            value={`${summary.active} / ${summary.inactive}`}
+            color="sky"
+          />
+          <SummaryCard
+            label="Excel Yes/No"
+            value={`${summary.excelYes} / ${summary.excelNo}`}
+            color="amber"
+          />
+          <SummaryCard
+            label="Repurposed Yes/No"
+            value={`${summary.repurposedYes} / ${summary.repurposedNo}`}
+            color="fuchsia"
+          />
         </div>
 
         {/* Filters row */}
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <Input placeholder="Search name or email" value={search} onChange={(e) => setSearch(e.target.value)} />
+          <Input
+            placeholder="Search name or email"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
           <Select value={filterSheet} onValueChange={setFilterSheet}>
             <SelectTrigger>
               <SelectValue placeholder="Sheet status" />
@@ -322,7 +411,13 @@ export default function Index() {
 
           <div className="ml-auto flex items-center gap-2">
             <div className="text-sm text-muted-foreground">Rows per page</div>
-            <Select value={String(pageSize)} onValueChange={(v) => { setPageSize(Number(v)); setPage(1); }}>
+            <Select
+              value={String(pageSize)}
+              onValueChange={(v) => {
+                setPageSize(Number(v));
+                setPage(1);
+              }}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -366,35 +461,55 @@ export default function Index() {
                   <div className="flex items-center gap-3">
                     <div
                       className="h-8 w-8 shrink-0 rounded-full text-white grid place-items-center text-sm font-bold"
-                      style={{ backgroundColor: `hsl(${stringToHue(i.name || i.id)}, 65%, 45%)` }}
+                      style={{
+                        backgroundColor: `hsl(${stringToHue(i.name || i.id)}, 65%, 45%)`,
+                      }}
                     >
                       {initials(i.name)}
                     </div>
                     <div className="min-w-0 grid gap-1">
-                      <Input placeholder="Name" value={i.name} onChange={(e) => setName(i.id, e.target.value)} />
-                      <Input placeholder="Email" value={i.email} onChange={(e) => setEmail(i.id, e.target.value)} />
+                      <Input
+                        placeholder="Name"
+                        value={i.name}
+                        onChange={(e) => setName(i.id, e.target.value)}
+                      />
+                      <Input
+                        placeholder="Email"
+                        value={i.email}
+                        onChange={(e) => setEmail(i.id, e.target.value)}
+                      />
                     </div>
                   </div>
                 </TableCell>
 
                 <TableCell>
-                  <Select value={i.statusActivity} onValueChange={(v) => setStatusActivity(i.id, v as any)}>
+                  <Select
+                    value={i.statusActivity}
+                    onValueChange={(v) => setStatusActivity(i.id, v as any)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Active">
-                        <span className="text-emerald-600 font-semibold">A</span> Active
+                        <span className="text-emerald-600 font-semibold">
+                          A
+                        </span>{" "}
+                        Active
                       </SelectItem>
                       <SelectItem value="Inactive">
-                        <span className="text-rose-600 font-semibold">I</span> Inactive
+                        <span className="text-rose-600 font-semibold">I</span>{" "}
+                        Inactive
                       </SelectItem>
                     </SelectContent>
                   </Select>
                 </TableCell>
 
                 <TableCell>
-                  <Select value={i.excelSubmitted} onValueChange={(v) => setExcelSubmitted(i.id, v as any)}>
+                  <Select
+                    value={i.excelSubmitted}
+                    onValueChange={(v) => setExcelSubmitted(i.id, v as any)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -415,7 +530,11 @@ export default function Index() {
                     className="rounded px-2 py-1 text-sm"
                     aria-label="toggle ai chat"
                   >
-                    {i.aiChatAdded ? <span className="text-emerald-600 font-bold">✔</span> : <span className="text-rose-600 font-bold">���</span>}
+                    {i.aiChatAdded ? (
+                      <span className="text-emerald-600 font-bold">✔</span>
+                    ) : (
+                      <span className="text-rose-600 font-bold">���</span>
+                    )}
                   </button>
                 </TableCell>
 
@@ -425,7 +544,11 @@ export default function Index() {
                     className="rounded px-2 py-1 text-sm"
                     aria-label="toggle data mining"
                   >
-                    {i.dataMiningGC ? <span className="text-emerald-600 font-bold">✔</span> : <span className="text-rose-600 font-bold">✘</span>}
+                    {i.dataMiningGC ? (
+                      <span className="text-emerald-600 font-bold">✔</span>
+                    ) : (
+                      <span className="text-rose-600 font-bold">✘</span>
+                    )}
                   </button>
                 </TableCell>
 
@@ -434,7 +557,9 @@ export default function Index() {
                     type="number"
                     className="w-24"
                     value={i.speakersCount}
-                    onChange={(e) => updateSpeakers(i.id, Number(e.target.value || 0))}
+                    onChange={(e) =>
+                      updateSpeakers(i.id, Number(e.target.value || 0))
+                    }
                   />
                 </TableCell>
 
@@ -443,17 +568,23 @@ export default function Index() {
                     <div className="h-2 w-full rounded bg-muted">
                       <div
                         className={"h-2 rounded bg-emerald-500"}
-                        style={{ width: `${Math.min(100, Math.round((i.speakersCount / i.speakersTarget) * 100))}%` }}
+                        style={{
+                          width: `${Math.min(100, Math.round((i.speakersCount / i.speakersTarget) * 100))}%`,
+                        }}
                       />
                     </div>
                     <div className="text-xs text-muted-foreground mt-1">
-                      {i.speakersCount}/{i.speakersTarget} {i.speakersCount >= i.speakersTarget ? "(Complete)" : ""}
+                      {i.speakersCount}/{i.speakersTarget}{" "}
+                      {i.speakersCount >= i.speakersTarget ? "(Complete)" : ""}
                     </div>
                   </div>
                 </TableCell>
 
                 <TableCell>
-                  <Select value={i.performance} onValueChange={(v) => setPerformance(i.id, v as any)}>
+                  <Select
+                    value={i.performance}
+                    onValueChange={(v) => setPerformance(i.id, v as any)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -465,7 +596,15 @@ export default function Index() {
                 </TableCell>
 
                 <TableCell>
-                  <Select value={i.segregation ?? "None"} onValueChange={(v) => setSegregation(i.id, (v as any) === "None" ? null : (v as any))}>
+                  <Select
+                    value={i.segregation ?? "None"}
+                    onValueChange={(v) =>
+                      setSegregation(
+                        i.id,
+                        (v as any) === "None" ? null : (v as any),
+                      )
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -480,7 +619,10 @@ export default function Index() {
                 </TableCell>
 
                 <TableCell>
-                  <Select value={i.sheetStatus} onValueChange={(v) => setSheetStatus(i.id, v as any)}>
+                  <Select
+                    value={i.sheetStatus}
+                    onValueChange={(v) => setSheetStatus(i.id, v as any)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -500,7 +642,10 @@ export default function Index() {
 
                 <TableCell>
                   {i.sheetStatus === "Black" ? (
-                    <Select value={i.dataRepurposed} onValueChange={(v) => setDataRepurposed(i.id, v as any)}>
+                    <Select
+                      value={i.dataRepurposed}
+                      onValueChange={(v) => setDataRepurposed(i.id, v as any)}
+                    >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -524,13 +669,23 @@ export default function Index() {
 
         {/* Pagination controls */}
         <div className="flex items-center justify-between p-4">
-          <div className="text-sm text-muted-foreground">Showing {paginated.length} of {filtered.length} results</div>
+          <div className="text-sm text-muted-foreground">
+            Showing {paginated.length} of {filtered.length} results
+          </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => setPage((p) => Math.max(1, p - 1))}>
+            <Button
+              variant="outline"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
               Prev
             </Button>
-            <div className="px-3">Page {page} / {totalPages}</div>
-            <Button variant="outline" onClick={() => setPage((p) => Math.min(totalPages, p + 1))}>
+            <div className="px-3">
+              Page {page} / {totalPages}
+            </div>
+            <Button
+              variant="outline"
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
               Next
             </Button>
           </div>
@@ -540,7 +695,15 @@ export default function Index() {
   );
 }
 
-function SummaryCard({ label, value, color }: { label: string; value: number | string; color: string }) {
+function SummaryCard({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: number | string;
+  color: string;
+}) {
   const gradients: Record<string, string> = {
     emerald: "from-emerald-400 to-teal-400",
     rose: "from-rose-400 to-rose-600",
@@ -551,7 +714,12 @@ function SummaryCard({ label, value, color }: { label: string; value: number | s
   };
   return (
     <div className="rounded-md border bg-background p-3">
-      <div className={"h-1 w-full rounded-md bg-gradient-to-r " + (gradients[color] ?? gradients.emerald)} />
+      <div
+        className={
+          "h-1 w-full rounded-md bg-gradient-to-r " +
+          (gradients[color] ?? gradients.emerald)
+        }
+      />
       <div className="mt-3">
         <div className="text-xs text-muted-foreground">{label}</div>
         <div className="mt-1 font-bold text-xl">{value}</div>
