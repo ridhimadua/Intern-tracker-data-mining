@@ -484,12 +484,12 @@ export default function Index() {
                 </TableCell>
 
                 <TableCell>
-                  <Select value={i.segregation ?? ""} onValueChange={(v) => setSegregation(i.id, (v as any) || null)}>
+                  <Select value={i.segregation ?? "None"} onValueChange={(v) => setSegregation(i.id, (v as any) === "None" ? null : (v as any))}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="None">None</SelectItem>
                       <SelectItem value="Resign">Resign</SelectItem>
                       <SelectItem value="Warning">Warning</SelectItem>
                       <SelectItem value="Terminated">Terminated</SelectItem>
