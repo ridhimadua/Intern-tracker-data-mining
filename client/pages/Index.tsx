@@ -298,7 +298,16 @@ export default function Index() {
   }
   function setStatusActivity(id: string, s: StatusActivity) {
     setInterns((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, statusActivity: s } : p)),
+      prev.map((p) => {
+        if (p.id !== id) return p;
+        if (s === "Leave") {
+          return { ...p, statusActivity: s, leaveFrom: p.leaveFrom ?? null, leaveTo: p.leaveTo ?? null };
+        }
+        if (p.statusActivity === "Leave" && s !== "Leave") {
+          return { ...p, statusActivity: s, leaveFrom: null, leaveTo: null };
+        }
+        return { ...p, statusActivity: s };
+      }),
     );
   }
   function setExcelSubmitted(id: string, v: YesNo) {
