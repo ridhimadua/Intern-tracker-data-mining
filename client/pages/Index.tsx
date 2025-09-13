@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Check, X } from "lucide-react";
 
 type StatusActivity = "Active" | "Inactive";
 type YesNo = "Yes" | "No";
@@ -534,9 +535,9 @@ export default function Index() {
                     aria-label="toggle ai chat"
                   >
                     {i.aiChatAdded ? (
-                      <span className="text-emerald-600 font-bold">✔</span>
+                      <Check className="h-4 w-4 text-emerald-600" />
                     ) : (
-                      <span className="text-rose-600 font-bold">���</span>
+                      <X className="h-4 w-4 text-rose-600" />
                     )}
                   </button>
                 </TableCell>
@@ -548,9 +549,9 @@ export default function Index() {
                     aria-label="toggle data mining"
                   >
                     {i.dataMiningGC ? (
-                      <span className="text-emerald-600 font-bold">✔</span>
+                      <Check className="h-4 w-4 text-emerald-600" />
                     ) : (
-                      <span className="text-rose-600 font-bold">✘</span>
+                      <X className="h-4 w-4 text-rose-600" />
                     )}
                   </button>
                 </TableCell>
