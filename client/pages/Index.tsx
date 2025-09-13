@@ -688,6 +688,28 @@ export default function Index() {
                 </TableCell>
 
                 <TableCell>
+                  {i.statusActivity === "Leave" ? (
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="date"
+                        value={i.leaveFrom ?? ""}
+                        onChange={(e) => setLeaveDates(i.id, e.target.value || null, i.leaveTo ?? null)}
+                        className="rounded-md border border-input px-2 py-1 text-sm"
+                      />
+                      <span className="text-sm text-muted-foreground">to</span>
+                      <input
+                        type="date"
+                        value={i.leaveTo ?? ""}
+                        onChange={(e) => setLeaveDates(i.id, i.leaveFrom ?? null, e.target.value || null)}
+                        className="rounded-md border border-input px-2 py-1 text-sm"
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">—</div>
+                  )}
+                </TableCell>
+
+                <TableCell>
                   <Select
                     value={i.sheetStatus}
                     onValueChange={(v) => setSheetStatus(i.id, v as any)}
