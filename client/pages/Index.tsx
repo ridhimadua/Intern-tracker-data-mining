@@ -29,7 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Check, X } from "lucide-react";
 
-type StatusActivity = "Active" | "Inactive";
+type StatusActivity = "Active" | "Inactive" | "Leave";
 type YesNo = "Yes" | "No";
 type Performance = "Good" | "Weak";
 type Segregation = "Resign" | "Warning" | "Terminated" | "Relocated";
