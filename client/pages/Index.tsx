@@ -172,9 +172,40 @@ function generateSeedInterns(count: number): Intern[] {
 }
 
 export default function Index() {
-  const [interns, setInterns] = useState<Intern[]>(() =>
-    generateSeedInterns(550),
-  );
+  const STORAGE_KEY = "intern-tracker-interns-v1";
+  const [interns, setInterns] = useState<Intern[]>([]);
+
+  // Load from localStorage once on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Intern[];
+        setInterns(parsed);
+        return;
+      }
+    } catch (e) {
+      console.error("Failed to read interns from localStorage", e);
+    }
+    // if not present, generate seed data and persist
+    const seeds = generateSeedInterns(550);
+    setInterns(seeds);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(seeds));
+    } catch (e) {
+      console.error("Failed to write seed interns to localStorage", e);
+    }
+  }, []);
+
+  // Persist interns on every change
+  useEffect(() => {
+    try {
+      if (interns.length > 0) localStorage.setItem(STORAGE_KEY, JSON.stringify(interns));
+    } catch (e) {
+      console.error("Failed to persist interns to localStorage", e);
+    }
+  }, [interns]);
+
   const [search, setSearch] = useState("");
   const [filterSheet, setFilterSheet] = useState<string>("All");
   const [filterPerf, setFilterPerf] = useState<string>("All");
